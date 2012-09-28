@@ -68,7 +68,6 @@ public class TabPageIndicator extends HorizontalScrollView implements PageIndica
     private ViewPager mViewPager;
     private ViewPager.OnPageChangeListener mListener;
 
-    private int mMaxTabWidth;
     private int mSelectedTabIndex;
 
     private OnTabReselectedListener mTabReselectedListener;
@@ -94,8 +93,6 @@ public class TabPageIndicator extends HorizontalScrollView implements PageIndica
         final int widthMode = MeasureSpec.getMode(widthMeasureSpec);
         final boolean lockedExpanded = widthMode == MeasureSpec.EXACTLY;
         setFillViewport(lockedExpanded);
-
-        mMaxTabWidth = -1; // We dont want a max tab width
 
         final int oldWidth = getMeasuredWidth();
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
@@ -145,6 +142,7 @@ public class TabPageIndicator extends HorizontalScrollView implements PageIndica
         tabView.setFocusable(true);
         tabView.setOnClickListener(mTabClickListener);
         tabView.setText(text);
+        tabView.setLines(1);
 
         mTabLayout.addView(tabView, new LinearLayout.LayoutParams(0, FILL_PARENT, 1));
     }
@@ -241,17 +239,6 @@ public class TabPageIndicator extends HorizontalScrollView implements PageIndica
 
         public TabView(Context context) {
             super(context, null, R.attr.vpiTabPageIndicatorStyle);
-        }
-
-        @Override
-        public void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-            super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-
-            // Re-measure if we went beyond our maximum size.
-            if (mMaxTabWidth > 0 && getMeasuredWidth() > mMaxTabWidth) {
-                super.onMeasure(MeasureSpec.makeMeasureSpec(mMaxTabWidth, MeasureSpec.EXACTLY),
-                        heightMeasureSpec);
-            }
         }
 
         public int getIndex() {
