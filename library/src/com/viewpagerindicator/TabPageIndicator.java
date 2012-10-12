@@ -17,6 +17,7 @@
 package com.viewpagerindicator;
 
 import android.content.Context;
+import android.graphics.Typeface;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
@@ -144,7 +145,7 @@ public class TabPageIndicator extends HorizontalScrollView implements PageIndica
         tabView.setText(text);
         tabView.setLines(1);
 
-        mTabLayout.addView(tabView, new LinearLayout.LayoutParams(0, FILL_PARENT, 1));
+        mTabLayout.addView(tabView, new LinearLayout.LayoutParams(WRAP_CONTENT, FILL_PARENT, 1));
     }
 
     @Override
@@ -235,10 +236,15 @@ public class TabPageIndicator extends HorizontalScrollView implements PageIndica
     }
 
     private class TabView extends TextView {
+        private static final String FONT_PATH = "fonts/C4TextBold.otf";
+
         private int mIndex;
 
         public TabView(Context context) {
             super(context, null, R.attr.vpiTabPageIndicatorStyle);
+
+            Typeface typeface = Typeface.createFromAsset(context.getAssets(), FONT_PATH);
+            setTypeface(typeface);
         }
 
         public int getIndex() {
