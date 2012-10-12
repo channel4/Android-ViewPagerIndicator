@@ -250,5 +250,16 @@ public class TabPageIndicator extends HorizontalScrollView implements PageIndica
         public int getIndex() {
             return mIndex;
         }
+
+        public void setSelected(boolean selected) {
+            super.setSelected(selected);
+
+            if (selected) {
+                setTextColor(0xFF0D7EA6);
+            }
+            else {
+                setTextColor(0xFF3D3D3D);
+            }
+        }
     }
 }
