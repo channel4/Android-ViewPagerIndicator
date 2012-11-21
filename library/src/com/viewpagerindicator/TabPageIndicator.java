@@ -17,6 +17,12 @@
 package com.viewpagerindicator;
 
 import android.content.Context;
+import android.content.res.TypedArray;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.Rect;
+import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
@@ -68,8 +74,8 @@ public class TabPageIndicator extends HorizontalScrollView implements PageIndica
     private ViewPager mViewPager;
     private ViewPager.OnPageChangeListener mListener;
 
-    private int mMaxTabWidth;
     private int mSelectedTabIndex;
+    private Boolean mUseDividers = false;
 
     private OnTabReselectedListener mTabReselectedListener;
 
@@ -80,7 +86,10 @@ public class TabPageIndicator extends HorizontalScrollView implements PageIndica
     public TabPageIndicator(Context context, AttributeSet attrs) {
         super(context, attrs);
         setHorizontalScrollBarEnabled(false);
-
+        int attrsWanted[] = new int[] {R.attr.vpiUseDividers};
+        TypedArray theAttrs = context.obtainStyledAttributes(attrs,attrsWanted);
+        mUseDividers = theAttrs.getBoolean(0, false);
+        theAttrs.recycle();
         mTabLayout = new LinearLayout(getContext());
         addView(mTabLayout, new ViewGroup.LayoutParams(WRAP_CONTENT, FILL_PARENT));
     }
@@ -94,8 +103,6 @@ public class TabPageIndicator extends HorizontalScrollView implements PageIndica
         final int widthMode = MeasureSpec.getMode(widthMeasureSpec);
         final boolean lockedExpanded = widthMode == MeasureSpec.EXACTLY;
         setFillViewport(lockedExpanded);
-
-        mMaxTabWidth = -1; // We dont want a max tab width
 
         final int oldWidth = getMeasuredWidth();
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
@@ -145,8 +152,9 @@ public class TabPageIndicator extends HorizontalScrollView implements PageIndica
         tabView.setFocusable(true);
         tabView.setOnClickListener(mTabClickListener);
         tabView.setText(text);
-
-        mTabLayout.addView(tabView, new LinearLayout.LayoutParams(0, FILL_PARENT, 1));
+        tabView.setLines(1);
+        tabView.setUseDividers(mUseDividers);
+        mTabLayout.addView(tabView, new LinearLayout.LayoutParams(WRAP_CONTENT, FILL_PARENT, 1));
     }
 
     @Override
@@ -237,25 +245,51 @@ public class TabPageIndicator extends HorizontalScrollView implements PageIndica
     }
 
     private class TabView extends TextView {
+        private static final String FONT_PATH = "fonts/C4TextBold.otf";
+
         private int mIndex;
+        private Drawable mDivider;
 
         public TabView(Context context) {
             super(context, null, R.attr.vpiTabPageIndicatorStyle);
-        }
-
-        @Override
-        public void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-            super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-
-            // Re-measure if we went beyond our maximum size.
-            if (mMaxTabWidth > 0 && getMeasuredWidth() > mMaxTabWidth) {
-                super.onMeasure(MeasureSpec.makeMeasureSpec(mMaxTabWidth, MeasureSpec.EXACTLY),
-                        heightMeasureSpec);
-            }
+            Typeface typeface = Typeface.createFromAsset(context.getAssets(), FONT_PATH);
+            setTypeface(typeface);
         }
 
         public int getIndex() {
             return mIndex;
+        }
+
+        public void setSelected(boolean selected) {
+            super.setSelected(selected);
+
+            if (selected) {
+                setTextColor(0xFF0D7EA6);
+            }
+            else {
+                setTextColor(0xFF3D3D3D);
+            }
+        }
+
+        public void setUseDividers(Boolean useDividers){
+            if(useDividers){
+                this.mDivider = getResources().getDrawable(R.drawable.divider);
+            }
+        }
+
+        @Override
+        protected void onDraw(Canvas canvas) {
+            super.onDraw(canvas);
+            if(mDivider != null){
+                canvas.translate(canvas.getWidth() -1, 0);
+                //centre the divider horizontally
+                int top = (int)(Math.abs(this.getMeasuredHeight() - mDivider.getIntrinsicHeight()) * 0.5);
+                int bottom = (int)(Math.abs(this.getMeasuredHeight() - top));
+                mDivider.setBounds(0 , top, this.getWidth(), bottom);
+                mDivider.draw(canvas);
+                canvas.restore();
+            }
+
         }
     }
 }
