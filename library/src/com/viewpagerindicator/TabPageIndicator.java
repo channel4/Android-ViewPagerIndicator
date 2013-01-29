@@ -17,7 +17,12 @@
 package com.viewpagerindicator;
 
 import android.content.Context;
+import android.content.res.TypedArray;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.Rect;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
@@ -70,6 +75,7 @@ public class TabPageIndicator extends HorizontalScrollView implements PageIndica
     private ViewPager.OnPageChangeListener mListener;
 
     private int mSelectedTabIndex;
+    private Boolean mUseDividers = false;
 
     private OnTabReselectedListener mTabReselectedListener;
 
@@ -80,7 +86,10 @@ public class TabPageIndicator extends HorizontalScrollView implements PageIndica
     public TabPageIndicator(Context context, AttributeSet attrs) {
         super(context, attrs);
         setHorizontalScrollBarEnabled(false);
-
+        int attrsWanted[] = new int[] {R.attr.vpiUseDividers};
+        TypedArray theAttrs = context.obtainStyledAttributes(attrs,attrsWanted);
+        mUseDividers = theAttrs.getBoolean(0, false);
+        theAttrs.recycle();
         mTabLayout = new LinearLayout(getContext());
         addView(mTabLayout, new ViewGroup.LayoutParams(WRAP_CONTENT, FILL_PARENT));
     }
@@ -144,7 +153,7 @@ public class TabPageIndicator extends HorizontalScrollView implements PageIndica
         tabView.setOnClickListener(mTabClickListener);
         tabView.setText(text);
         tabView.setLines(1);
-
+        tabView.setUseDividers(mUseDividers);
         mTabLayout.addView(tabView, new LinearLayout.LayoutParams(WRAP_CONTENT, FILL_PARENT, 1));
     }
 
@@ -239,10 +248,10 @@ public class TabPageIndicator extends HorizontalScrollView implements PageIndica
         private static final String FONT_PATH = "fonts/C4TextBold.otf";
 
         private int mIndex;
+        private Drawable mDivider;
 
         public TabView(Context context) {
             super(context, null, R.attr.vpiTabPageIndicatorStyle);
-
             Typeface typeface = Typeface.createFromAsset(context.getAssets(), FONT_PATH);
             setTypeface(typeface);
         }
@@ -260,6 +269,27 @@ public class TabPageIndicator extends HorizontalScrollView implements PageIndica
             else {
                 setTextColor(0xFF3D3D3D);
             }
+        }
+
+        public void setUseDividers(Boolean useDividers){
+            if(useDividers){
+                this.mDivider = getResources().getDrawable(R.drawable.divider);
+            }
+        }
+
+        @Override
+        protected void onDraw(Canvas canvas) {
+            super.onDraw(canvas);
+            if(mDivider != null){
+                canvas.translate(canvas.getWidth() -1, 0);
+                //centre the divider horizontally
+                int top = (int)(Math.abs(this.getMeasuredHeight() - mDivider.getIntrinsicHeight()) * 0.5);
+                int bottom = (int)(Math.abs(this.getMeasuredHeight() - top));
+                mDivider.setBounds(0 , top, this.getWidth(), bottom);
+                mDivider.draw(canvas);
+                canvas.restore();
+            }
+
         }
     }
 }
